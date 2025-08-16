@@ -253,8 +253,9 @@ async def _ari_handle_call(client, channel_id: str, app: App, asterisk_q: asynci
     session_id = str(uuid.uuid4())
     callbacks = TranscriptionCallbacks(app, message_q, session_id=session_id, caller_id=caller_id)
     llm = app.state.SpeechPipelineManager.llm
-    if hasattr(llm, "open_persistent_ws"):
-        llm.open_persistent_ws()
+    open_ws = getattr(llm, "open_persistent_ws", None)
+    if callable(open_ws):
+        open_ws()
 
     app.state.AudioInputProcessor.realtime_callback = callbacks.on_partial
     app.state.AudioInputProcessor.transcriber.potential_sentence_end = callbacks.on_potential_sentence
@@ -319,8 +320,9 @@ async def _ari_handle_call(client, channel_id: str, app: App, asterisk_q: asynci
         udp.remote_addr = None
         app.state.SpeechPipelineManager.reset()
         app.state.AudioInputProcessor.interrupted = False
-        if hasattr(llm, "close_persistent_ws"):
-            llm.close_persistent_ws()
+        close_ws = getattr(llm, "close_persistent_ws", None)
+        if callable(close_ws):
+            close_ws()
 
 
 async def start_ari_bridge(app: App):
