@@ -137,10 +137,10 @@ def _ari_send_tts_and_forward_audio(app, message_q: asyncio.Queue, asterisk_q: a
                                     udp: RtpUdpProtocol, callbacks, send_tts_chunks_func) -> list[asyncio.Task]:
     audio_q = asyncio.Queue()
     tasks = [
-        _ari_forward_audio(asterisk_q, audio_q),
+        asyncio.create_task(_ari_forward_audio(asterisk_q, audio_q)),
         asyncio.create_task(app.state.AudioInputProcessor.process_chunk_queue(audio_q)),
         asyncio.create_task(send_tts_chunks_func(app, message_q, callbacks)),
-        _ari_send_tts(message_q, udp),
+        asyncio.create_task(_ari_send_tts(message_q, udp)),
     ]
     return tasks
 
