@@ -183,10 +183,12 @@ ENV DS_BUILD_TRANSFORMER=1
 ENV HF_HOME=${HOME}/.cache/huggingface
 ENV TORCH_HOME=${HOME}/.cache/torch
 
-# Expose RTP media port
+# Expose the port the FastAPI application runs on
+EXPOSE 8000
+# Expose RTP media port for ARI bridge
 EXPOSE 10000/udp
 
 # Set the entrypoint script - This runs as root
 ENTRYPOINT ["/entrypoint.sh"]
 # Define the default command - This is passed as "$@" to the entrypoint script
-CMD ["python", "server.py"]
+CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]

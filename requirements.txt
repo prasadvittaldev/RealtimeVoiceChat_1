@@ -2,6 +2,10 @@
 realtimestt==0.3.104
 realtimetts[kokoro,coqui,orpheus]==0.5.5
 
+# webserver dependencies
+fastapi
+uvicorn
+
 # ARI client
 ari @ git+https://github.com/prasadvittaldev/ari-py
 
