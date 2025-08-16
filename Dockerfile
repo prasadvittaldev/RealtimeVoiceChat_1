@@ -185,6 +185,8 @@ ENV TORCH_HOME=${HOME}/.cache/torch
 
 # Expose the port the FastAPI application runs on
 EXPOSE 8000
+# Expose RTP media port for ARI bridge
+EXPOSE 10000/udp
 
 # Set the entrypoint script - This runs as root
 ENTRYPOINT ["/entrypoint.sh"]

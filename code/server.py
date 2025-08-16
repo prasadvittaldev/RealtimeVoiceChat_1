@@ -21,11 +21,13 @@ import os # Added for environment variable access
 
 from typing import Any, Dict, Optional, Callable # Added for type hints in docstrings
 from contextlib import asynccontextmanager
+import contextlib
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import HTMLResponse, Response, FileResponse
+from ari_bridge import start_ari_bridge
 
 USE_SSL = False
 TTS_START_ENGINE = "orpheus"
@@ -130,12 +132,18 @@ async def lifespan(app: FastAPI):
         is_orpheus=TTS_START_ENGINE=="orpheus",
         pipeline_latency=app.state.SpeechPipelineManager.full_output_pipeline_latency / 1000, # seconds
     )
-    app.state.Aborting = False # Keep this? Its usage isn't clear in the provided snippet. Minimizing changes.
+    app.state.Aborting = False
+
+    ari_task = asyncio.create_task(start_ari_bridge(app, TranscriptionCallbacks, send_tts_chunks))
 
     yield
 
     logger.info("🖥️⏹️ Server shutting down")
     app.state.AudioInputProcessor.shutdown()
+    if ari_task:
+        ari_task.cancel()
+        with contextlib.suppress(Exception):
+            await ari_task
 
 # --------------------------------------------------------------------
 # FastAPI app instance
